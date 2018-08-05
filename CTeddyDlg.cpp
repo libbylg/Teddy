@@ -6,11 +6,18 @@
 #include "Teddy.h"
 #include "CTeddyDlg.h"
 #include "afxdialogex.h"
+#include "ImageStatic.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
+// ==========
+// =        =
+// =        =
+// = ====== =
+// ==========
+#define     IMAGE_STATIC_BORDER_WIDTH   2
 
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
@@ -59,7 +66,7 @@ void CTeddyDlg::DoDataExchange(CDataExchange* pDX)
     CDialogEx::DoDataExchange(pDX);
     DDX_Control(pDX, IDC_LIST_MESSAGES, m_lbMessageBox);
     //DDX_Control(pDX, IDC_STATIC_META, m_stMeta);
-    DDX_Control(pDX, IDC_STATIC_META_IMAGES, m_stMetaImageBar);
+    DDX_Control(pDX, IDC_STATIC_META_IMAGES, m_stTemplateImageBar);
     DDX_Control(pDX, IDC_STATIC_MAP, m_stGameMapArea);
 }
 
@@ -144,7 +151,7 @@ BOOL CTeddyDlg::OnInitDialog()
 
     this->m_spSplitBar.Relayout();
 
-    this->DrawMetaImages();
+    this->DrawTemplateImages();
     
     this->DrawMap1();
 
@@ -190,7 +197,7 @@ void CTeddyDlg::OnPaint()
 	else
 	{
 		CDialogEx::OnPaint();
-        //DrawMetaImages();
+        //DrawTemplateImages();
 	}
 }
 
@@ -202,35 +209,58 @@ HCURSOR CTeddyDlg::OnQueryDragIcon()
 }
 
 
-void CTeddyDlg::DrawMetaImages()
+// BOOL CTeddyDlg::PreTranslateMessage(MSG* pMsg)
+// {
+//     int iStaticIndex = ::GetWindowLong(pMsg->hwnd, GWL_USERDATA);
+//     LONG hParentWnd = ::GetWindowLong(pMsg->hwnd, GWL_HWNDPARENT);
+//     HWND hWndTemplateImageBar = (HWND)this->m_stTemplateImageBar;
+//     HWND hWndGameMapArea = (HWND)this->m_stGameMapArea;
+// 
+//     if (!::IsWindow(hWndTemplateImageBar))
+//     {
+//         return TRUE;
+//     }
+// 
+//     if (!::IsWindow(hWndGameMapArea))
+//     {
+//         return TRUE;
+//     }
+// 
+//     return TRUE;
+// }
+
+void CTeddyDlg::DrawTemplateImages()
 {
     CSize  tSize(50, 50);
 
-    for (int i = 0; i < this->m_oModel.m_bmTemplateImages.GetCount(); i++)
+    for (int iStaticIndex = 0; iStaticIndex < this->m_oModel.m_bmTemplateImages.GetCount(); iStaticIndex++)
     {
-        CStatic* pStatic = NULL;
-        if (i < this->m_vTemplateImageItems.GetCount())
+        CImageStatic* pStatic = NULL;
+        if (iStaticIndex < this->m_vTemplateImageItems.GetCount())
         {
-            pStatic = this->m_vTemplateImageItems.GetAt(i);
+            pStatic = this->m_vTemplateImageItems.GetAt(iStaticIndex);
         }
         else
         {
-            CPoint tLeftTop((i * STD_WIDTH), 0);
+            CPoint tLeftTop((iStaticIndex * STD_WIDTH), 0);
             CRect rect(tLeftTop, tSize);
-            pStatic = new CStatic();
-            pStatic->Create(_T(""), SS_BITMAP | SS_CENTERIMAGE, rect, &(this->m_stMetaImageBar), ID_STATIC_META_IMAGE_BEGIN + i);
+            pStatic = new CImageStatic();
+            pStatic->Create(rect, &(this->m_stTemplateImageBar), ID_STATIC_META_IMAGE_BEGIN + iStaticIndex);
+            ::SetWindowLong((HWND)pStatic, GWL_USERDATA, (LONG)iStaticIndex);
             m_vTemplateImageItems.Add(pStatic);
         }
 
-        HBITMAP hBitmap = this->m_oModel.m_bmTemplateImages.GetAt(i);
-        pStatic->SetBitmap(hBitmap);
+        HBITMAP hBitmap = this->m_oModel.m_bmTemplateImages.GetAt(iStaticIndex);
+        //pStatic->SetBitmap(hBitmap);
+        pStatic->SetupBitmap(hBitmap);
+        pStatic->SetupBorderWidth(IMAGE_STATIC_BORDER_WIDTH);
         pStatic->ShowWindow(TRUE);
     }
 
     //  删除多余的模板项
     while (this->m_vTemplateImageItems.GetCount() > this->m_oModel.m_bmTemplateImages.GetCount())
     {
-        CStatic* pStatic = this->m_vTemplateImageItems.GetAt(this->m_vTemplateImageItems.GetCount() - 1);
+        CImageStatic* pStatic = this->m_vTemplateImageItems.GetAt(this->m_vTemplateImageItems.GetCount() - 1);
         pStatic->DestroyWindow();
         delete pStatic;
     }
@@ -242,7 +272,7 @@ void CTeddyDlg::DrawMap1()
     {
         for (int col = 0; col < this->m_oModel.m_iGameMapWidth; col++)
         {
-            CStatic* pStatic = NULL;
+            CImageStatic* pStatic = NULL;
             int iStaticIndex = ((row * this->m_oModel.m_iGameMapHeight) + col);
             if (iStaticIndex < this->m_vGameMapItems.GetCount())
             {
@@ -252,8 +282,9 @@ void CTeddyDlg::DrawMap1()
             {
                 CPoint tLeftTop((row * this->m_oModel.m_siTemplateImageSize.cy), (col * this->m_oModel.m_siTemplateImageSize.cx));
                 CRect rect(tLeftTop, this->m_oModel.m_siTemplateImageSize);
-                pStatic = new CStatic();
-                pStatic->Create(_T(""), SS_BITMAP | SS_CENTERIMAGE, rect, &(this->m_stGameMapArea), ID_STATIC_GAME_MAP_ITEM_BEGIN + iStaticIndex);
+                pStatic = new CImageStatic();
+                pStatic->Create(rect, &(this->m_stGameMapArea), ID_STATIC_GAME_MAP_ITEM_BEGIN + iStaticIndex);
+                ::SetWindowLong((HWND)pStatic, GWL_USERDATA, (LONG)iStaticIndex);
                 this->m_vGameMapItems.Add(pStatic);
             }
 
@@ -262,7 +293,9 @@ void CTeddyDlg::DrawMap1()
 
             //  将图片显示到 CStatic 上
             HBITMAP hBitmap = this->m_oModel.m_bmTemplateImages.GetAt(iTemplateImageIndex);
-            pStatic->SetBitmap(hBitmap);
+            //pStatic->SetBitmap(hBitmap);
+            pStatic->SetupBitmap(hBitmap);
+            pStatic->SetupBorderWidth(0);
             pStatic->ShowWindow(TRUE);
         }
     }
@@ -285,7 +318,7 @@ void CTeddyDlg::OnSize(UINT nType, int cx, int cy)
     if (!::IsWindow(this->m_stGameMapArea) ||
         !::IsWindow(this->m_lbMessageBox)  ||
         !::IsWindow(this->m_spSplitBar)    ||
-        !::IsWindow(this->m_stMetaImageBar))
+        !::IsWindow(this->m_stTemplateImageBar))
     {
         return;
     }
@@ -324,5 +357,5 @@ void CTeddyDlg::OnSize(UINT nType, int cx, int cy)
     this->m_stGameMapArea.MoveWindow(&siGameMapAreaRect, TRUE);
     this->m_lbMessageBox.MoveWindow(&siMessageBoxRect, TRUE);
     this->m_spSplitBar.MoveWindow(&siSplitBarRect, TRUE);
-    this->m_stMetaImageBar.MoveWindow(&siMetaImageBarRect, TRUE);
+    this->m_stTemplateImageBar.MoveWindow(&siMetaImageBarRect, TRUE);
 }

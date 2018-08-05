@@ -16,7 +16,7 @@
 #define ID_STATIC_META_IMAGE_BEGIN      100
 #define ID_STATIC_GAME_MAP_ITEM_BEGIN   1000
 
-
+class CImageStatic;
 // CTeddyDlg 对话框
 class CTeddyDlg : public CDialogEx
 {
@@ -32,11 +32,11 @@ public:
 
 private:
     CTeddyModel         m_oModel;
-    CArray<CStatic*>    m_vTemplateImageItems;
-    CArray<CStatic*>    m_vGameMapItems;
+    CArray<CImageStatic*>    m_vTemplateImageItems;
+    CArray<CImageStatic*>    m_vGameMapItems;
 
 private:
-    void DrawMetaImages();
+    void DrawTemplateImages();
     void DrawMap1();
 
 // 实现
@@ -48,10 +48,15 @@ protected:
 	afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
-   
+
 	DECLARE_MESSAGE_MAP()
+
 public:
-    CStatic   m_stMetaImageBar;
+    //virtual BOOL PreTranslateMessage(MSG* pMsg);
+    
+
+public:
+    CStatic   m_stTemplateImageBar;
     CStatic   m_stGameMapArea;
     CListBox  m_lbMessageBox;
     CSplitterControl m_spSplitBar;

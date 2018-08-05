@@ -44,6 +44,9 @@
     <ClInclude Include="SplitterControl.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ImageStatic.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Teddy.cpp">
@@ -60,6 +63,9 @@
     </ClCompile>
     <ClCompile Include="SplitterControl.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageStatic.cpp">
+      <Filter>头文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
